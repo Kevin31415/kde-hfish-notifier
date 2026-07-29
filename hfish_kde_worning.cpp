@@ -1,5 +1,4 @@
 #include <iostream>
-// 又是不找库的一天
 #include <string>
 #include <sstream>
 #include <vector>
@@ -13,7 +12,6 @@
 #include <errno.h>
 #include <arpa/inet.h>
 
-// --- 简单 JSON 解析函数（仅提取 src_ip, dst_port, event_type, timestamp）---
 std::string find_json_field(const std::string& json_str, const char* field_name) {
     std::string field = "\"";
     field += field_name;
@@ -22,17 +20,15 @@ std::string find_json_field(const std::string& json_str, const char* field_name)
     if (pos == std::string::npos) return "N/A";
 
     pos += field.length();
-    // 跳过空格
+
     while (pos < json_str.length() && (json_str[pos] == ' ' || json_str[pos] == '\t')) pos++;
     
-    // 如果是字符串 "xxx"
     if (pos < json_str.length() && json_str[pos] == '"') {
         pos++;
         size_t end = json_str.find('"', pos);
         if (end == std::string::npos) return "N/A";
         return json_str.substr(pos, end - pos);
     }
-    // 如果是数字
     else {
         size_t end = pos;
         while (end < json_str.length() && 
@@ -42,8 +38,6 @@ std::string find_json_field(const std::string& json_str, const char* field_name)
     }
 }
 
-// --- 弹出 KDE 桌面通知 ---
-// 简单转义，供放在双引号中的 shell 参数使用
 std::string shell_escape_double_quotes(const std::string& s) {
     std::string out;
     out.reserve(s.size());
@@ -61,7 +55,6 @@ void show_notification(const std::string& message) {
     system(cmd.c_str());
 }
 
-// --- 主函数：启动 TCP 服务器 ---
 int main() {
     int server_fd, new_socket;
     struct sockaddr_in address;
@@ -84,33 +77,29 @@ int main() {
     std::cout << "hfish KDE 通知工具\n";
     std::cout << "开始尝试绑定端口并启动服务..." << std::endl;
 
-    // 创建 socket
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         std::cerr << "socket 创建失败: " << strerror(errno) << "\n";
         return 1;
     }
 
-    // 设置 socket 选项：端口立即重用
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
         std::cerr << "setsockopt 失败: " << strerror(errno) << "\n";
         return 1;
     }
 
     address.sin_family = AF_INET;
-    // 只监听 127.0.0.1
-    if (inet_pton(AF_INET, "127.0.0.1", &address.sin_addr) != 1) {
+
+    if (inet_pton(AF_INET, "127.0.0.1" /* 只监听 127.0.0.1*/, &address.sin_addr) != 1) {
         std::cerr << "inet_pton 失败: " << strerror(errno) << "\n";
         return 1;
     }
     address.sin_port = htons(5222); 
 
-    // 绑定端口
     if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
         std::cerr << "bind 失败，端口可能被占用，原因: " << strerror(errno) << "\n";
         return 1;
     }
 
-    // 监听
     if (listen(server_fd, 3) < 0) {
         std::cerr << "listen 失败\n";
         return 1;
@@ -129,7 +118,6 @@ int main() {
 
         std::string req(buffer, valread);
 
-        // --- 解析 HTTP 请求头，确保是 POST /webhook/hfish ***
         if (req.find("POST /webhook/hfish") == std::string::npos) {
             // 发送 404
             const char* not_found_response =
@@ -142,7 +130,6 @@ int main() {
             continue;
         }
 
-        // --- 找到 body 开始位置（HTTP 头部结束后） ---
         size_t pos = req.find("\r\n\r\n");
         if (pos == std::string::npos) {
             const char* bad_request =
@@ -155,10 +142,8 @@ int main() {
             continue;
         }
 
-        // body 就是 \r\n\r\n 之后的内容
         std::string json_body = req.substr(pos + 4);
 
-        // --- 解析字段（参照文档） ---
         // 骄傲的使用大力出奇迹法 <_<
         std::string client = find_json_field(json_body, "client");
         std::string client_ip = find_json_field(json_body, "client_ip");
@@ -174,11 +159,10 @@ int main() {
         std::string geo = find_json_field(json_body, "geo");
         std::string time_field = find_json_field(json_body, "time");
         std::string threat_name = find_json_field(json_body, "threat_name");
-        std::string hack = "这是一行恶意代码,快去提issuse ^_^";
+        std::string hack = "这是一行恶意代码^_^";
         std::string threat_level = find_json_field(json_body, "threat_level");
         std::string info = find_json_field(json_body, "info");
 
-        // 构建简短通知内容（仅显示概要，避免弹窗显示不全）
         std::string msg = "HFish 检测到网络攻击 — ";
         if (attack_type != "N/A") msg += attack_type; else msg += "未知事件";
         if (src_ip != "N/A") msg += " 来自 " + src_ip;
@@ -186,13 +170,10 @@ int main() {
         if (time_field != "N/A") msg += "  时间:" + time_field;
         if (threat_level != "N/A") msg += "  等级:" + threat_level;
 
-        // 打印日志
         std::cout << "收到告警：\n" << msg << "\n\n";
 
-        // 弹出 KDE 通知
         show_notification(msg);
 
-        // --- 返回 HTTP 200 响应 ---
         std::string body = "{\"status\":\"success\"}";
         std::ostringstream resp;
         resp << "HTTP/1.1 200 OK\r\n"
