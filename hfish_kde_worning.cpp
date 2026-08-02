@@ -38,21 +38,13 @@ std::string find_json_field(const std::string& json_str, const char* field_name)
     }
 }
 
-std::string shell_escape_double_quotes(const std::string& s) {
-    std::string out;
-    out.reserve(s.size());
-    for (char c : s) {
-        if (c == '\\') out += "\\\\";
-        else if (c == '"') out += "\\\"";
-        else out += c;
-    }
-    return out;
-}
 
 void show_notification(const std::string& message) {
-    std::string esc = shell_escape_double_quotes(message);
-    std::string cmd = "kdialog --title \"侦测到攻击\" --passivepopup \"" + esc + "\" 8 &";
-    system(cmd.c_str());
+    pid_t pid = fork();
+    if (pid == 0) {
+        execlp("kdialog", "kdialog", "--title", "侦测到攻击", "--passivepopup", message.c_str(), "8", (char *)NULL);
+        _exit(127);
+    }
 }
 
 int main() {
