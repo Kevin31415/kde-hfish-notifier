@@ -3,7 +3,7 @@
 
 ---
 
-## 使用Hfish的webhook和kde通知提示用户蜜罐的警告
+## 使用Hfish的webhook功能和kde通知提示用户蜜罐的警告
 
 ---
 
