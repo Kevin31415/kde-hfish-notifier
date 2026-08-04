@@ -151,7 +151,6 @@ int main() {
         std::string geo = find_json_field(json_body, "geo");
         std::string time_field = find_json_field(json_body, "time");
         std::string threat_name = find_json_field(json_body, "threat_name");
-        std::string hack = "这是一行恶意代码^_^";
         std::string threat_level = find_json_field(json_body, "threat_level");
         std::string info = find_json_field(json_body, "info");
 
