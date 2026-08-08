@@ -93,7 +93,7 @@ int main() {
     }
 
     if (listen(server_fd, 3) < 0) {
-        std::cerr << "listen 失败\n";
+        std::cerr << "listen 失败...\n";
         return 1;
     }
 
