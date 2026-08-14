@@ -53,8 +53,6 @@ int main() {
     int opt = 1;
     int addrlen = sizeof(address);
 
-    
-
     std::cout << " ___  __        _______       ___      ___  ___      ________       ________       _____      ___   ___     " << std::endl;
     std::cout << "|\\  \\|\\  \\     |\\  ___ \\     |\\  \\    /  /||\\  \\    |\\   ___  \\    |\\_____  \\     / __  \\    |\\  \\ |\\  \\    " << std::endl;
     std::cout << "\\ \\  \\/  /|_   \\ \\   __/|    \\ \\  \\  /  / /\\ \\  \\   \\ \\  \\ \\  \\   \\|____|\\ /_   |\\/_|\\  \\   \\ \\  \\_\\  \\   " << std::endl;
@@ -97,7 +95,7 @@ int main() {
     }
 
 
-    std::cout << "监听地址：http://127.0.0.1:5222/webhook/hfish\n";
+    std::cout << "监听地址：http://localhost:5222/webhook/hfish\n";
 
     while (true) {
         if ((new_socket = accept(server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen)) < 0) {
