@@ -38,7 +38,6 @@ std::string find_json_field(const std::string& json_str, const char* field_name)
     }
 }
 
-
 void show_notification(const std::string& message) {
     pid_t pid = fork();
     if (pid == 0) {
